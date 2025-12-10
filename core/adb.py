@@ -12,7 +12,7 @@ def cmd(cmd):
 def tap(x, y):
     cmd(f"shell input tap {x} {y}")
     # 点击后延迟1秒
-    time.sleep(random.uniform(0.8, 1.4))
+    time.sleep(random.uniform(1, 2))
 
 # 滑动
 def swipe(x1, y1, x2, y2, duration=300):
