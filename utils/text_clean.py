@@ -17,5 +17,5 @@ def clean_ocr_text(ocr_json):
             text += line
         else:
             text += ("\n" if i > 0 else "") + line
-
+    print(text)
     return text.strip()

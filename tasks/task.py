@@ -1,5 +1,8 @@
 import time
 import core.adb as adb
+import core.ocr as ocr
+import core.comment as comment
+import utils.image_utils as image_utils
 
 # ------------------------------
 # 听新闻
@@ -85,27 +88,31 @@ def task_watch_news():
     print("开始执行看新闻任务")
     print("点击 90 1550 看新闻按钮")
     adb.tap(90, 1550)
-    time.sleep(1)
     print("点击 300 130 看热榜")
     adb.tap(300, 130)
-    time.sleep(1)
     for i in range(7):
         # 7个新闻，每次y轴加100像素看下一个
         print("新闻坐标",450,410 + i*99)
         adb.tap(450,410 + i*99)
         print(f"正在观看第 {i+1}/10 个新闻")
+        # 生成评论
+        image = adb.screencap()
+        image_bytes = image_utils.encode_png(image)
+        res_ocr = ocr.ocr_image(image_bytes)
+        res_comment = comment.gen_comment(res_ocr)
+        time.sleep(10)
         # 滑动观看新闻
         for _ in range(6):
             adb.human_swipe()
-        # todo 添加评论
-        # 识别新闻标题
-        # screen = adb_screencap()
-        # 添加ocr识别新闻标题
-        # comment = gen_comment(text)
-        adb.swipe(450, 800, 450, 300, 300)
-        time.sleep(1)
-        adb.cmd("shell input keyevent KEYCODE_BACK")
-        time.sleep(1)
+        print("点击 100 1560添加评论")
+        adb.tap(100, 1560)
+        adb.input_text(res_comment)
+        print("点击 820 1500发送")
+        adb.tap(820, 1500)
+        
+        # adb.swipe(450, 800, 450, 300, 300)
+        adb.back()
+
 
 
 
@@ -115,16 +122,18 @@ def task_watch_news():
 def run_tasks():
     print(">>> 开始执行每日积分任务 <<<")
 
-    success = task_watch_news()
+    #success = task_watch_news()
     time.sleep(10)
 
-    #success = task_watch_video()
+    success = task_watch_video()
     #time.sleep(10)
 
-    #success = task_watch_living_video()
+    success = task_watch_living_video()
     #time.sleep(10)
 
-    #success = task_listen_news()
+    success = task_listen_news()
 
     print(">>> 积分任务执行结束 <<<")
 
+def __init__():
+    run_tasks()

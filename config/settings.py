@@ -7,3 +7,4 @@ SCREENSHOT_DIR = "templates/screenshots/"
 BUTTON_DIR = "templates/buttons/"
 
 DEEPSEEK_API = "https://api.deepseek.com"
+DEEPSEEK_API_KEY = "sk-b210148cb4b7473fb428dcb446e27c5c"
