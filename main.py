@@ -1,13 +1,14 @@
 import tasks.task as task
 import utils.account_switcher as account_switcher
+import config.accounts as accounts
 from utils.scheduler import run_daily
 import time
 
 if __name__ == "__main__":
     print(">>> 自动化任务系统启动 <<<")
 
-    # 循环账号
-    for _ in range(2):
+    # 循环账号ACCOUNTS的长度
+    for _ in range(len(accounts.ACCOUNTS)):
         task.run_tasks()
         time.sleep(5)
         account_switcher.switch_to_next_account()
