@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import random
 import time
+import pyperclip
+import urllib.parse
 from config.settings import DEVICE
 
 def cmd(cmd):
@@ -18,7 +20,7 @@ def tap(x, y):
 def swipe(x1, y1, x2, y2, duration=300):
     cmd(f"shell input swipe {x1} {y1} {x2} {y2} {duration}")
     # 点击后延迟1秒
-    time.sleep(random.uniform(0.8, 1.4))
+    time.sleep(random.uniform(1, 2))
 
 # 截图
 def screencap_cv2():
@@ -72,4 +74,24 @@ def back():
     返回
     """
     cmd(f'shell input keyevent KEYCODE_BACK')
-    time.sleep(random.uniform(0.8, 1.4))
+    time.sleep(random.uniform(1, 2))
+
+# 获取剪切板
+def get_clipboard():
+    """
+    直接获取PC剪贴板内容（MuMu与PC共享剪贴板）
+    """
+    try:
+        return pyperclip.paste()
+    except Exception as e:
+        print(f"[ERROR] 获取剪贴板失败: {e}")
+        return ""
+
+# 打开分享链接    
+def open_url(url):
+    """使用 ADB 打开链接"""
+    encoded = urllib.parse.quote(url, safe=":/?&=")
+    adb_cmd = f'shell am start -a android.intent.action.VIEW -d \\"{encoded}\\""'
+    cmd(adb_cmd)
+    time.sleep(5)
+    

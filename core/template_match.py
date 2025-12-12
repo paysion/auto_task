@@ -9,15 +9,21 @@ def find_template(screen, template_path, threshold=0.8):
         raise ValueError(f"无法加载模板图片: {template_path}")
     
     h, w = tpl.shape[:2]
+    # 截图与模板都转换为灰度
+    screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+    tpl = cv2.cvtColor(tpl, cv2.COLOR_BGR2GRAY)
     
     # 使用TM_CCOEFF_NORMED
     result = cv2.matchTemplate(screen, tpl, cv2.TM_CCOEFF_NORMED)
+    if result is None:
+        return None,None, None
+    
     _, max_val, _, max_loc = cv2.minMaxLoc(result)
     
     print(f"匹配度: {max_val:.4f}")
     
     if max_val < threshold:
-        return None
+        return None, None, None
     
     x = max_loc[0] + w // 2
     y = max_loc[1] + h // 2

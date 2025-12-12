@@ -5,38 +5,33 @@ import core.comment as comment
 import core.template_match as template_match
 import utils.image_utils as image_utils
 import config.settings as settings
+import random
+
 # ------------------------------
 # 听新闻
 # ------------------------------
-
 def task_listen_news():
+    print(">>> 开始听新闻 <<<")
     print("切换新闻页面")
     adb.tap(90,1550)
-    time.sleep(1)
     print("点击听新闻按钮")
     # 固定分辨率，点击100,1425位置为打开听新闻页面
     adb.tap(100, 1425)
     # 450,700为播放按钮位置
-    time.sleep(1)
     print("点击播放按钮")
     adb.tap(450,700)
-    # 等待一个小时
+    # 任务听完一个小时
     time.sleep(3660)
-    #time.sleep(5)
 
-    # --------------------
-    # 返回
-    # --------------------
-    print("听新闻任务结束，返回主界面…")
-    adb.cmd("shell input keyevent KEYCODE_BACK")
-    time.sleep(1)
+    print("======听新闻任务结束，返回主界面…=======")
+    adb.back()
     return True
 
 # ------------------------------
 # 自动化任务：看直播
 # ------------------------------
 def task_watch_living_video():
-    print("开始执行看直播任务")
+    print(">>> 开始执行看直播任务 <<<")
     print("点击 450 1550 看视频按钮")
     adb.tap(450, 1550)
     print("点击 310 85 直播按钮")
@@ -48,10 +43,11 @@ def task_watch_living_video():
         time.sleep(1860)
         print("点击 857 98 退出直播")
         adb.tap(857, 98)
-        print("看直播任务结束")
+        print("======看直播任务结束……======")
+        return True
     else:
-        print("看直播任务失败")
-    time.sleep(1)
+        print("======看直播任务失败……======")
+        return False
 
 
 def find_and_tap_live_button(max_attempts=3):
@@ -90,35 +86,36 @@ def find_and_tap_live_button(max_attempts=3):
             return False
 
 # ------------------------------
-# 自动化任务：看视频
+# 看视频
 # ------------------------------
 def task_watch_video():
-    print("开始执行看视频任务")
+    print(">>> 开始看视频 <<<")
     print("点击 450 1550 看视频按钮")
     adb.tap(450, 1550)
-    time.sleep(1)
     print("点击 400 85 切换热点视频")
     adb.tap(400, 85)
-    time.sleep(1)
     # todo 怎么确定每个视频的时间长短，目前是固定每过60秒滑一个
     for i in range(12):
         print(f"正在滑动第 {i+1}/12 个视频")
         adb.swipe(450, 800, 450, 500, 300)
-        time.sleep(60)
+        # 点击分享按钮，复制分享链接，并存入
+        print("点击 840 1350 分享按钮")
+        adb.tap(840, 1350)
+        print("点击 100 1380 复制链接")
+        adb.tap(100, 1380)
+        print("打开分享链接", adb.get_clipboard())
+        adb.open_url(adb.get_clipboard())
+        adb.back()
+        time.sleep(random.uniform(45, 60))
 
-    # --------------------
-    # 返回
-    # --------------------
-    print("看视频任务结束…")
-    time.sleep(1)
-
+    print("======看视频任务结束……======")
     return True
 
 # ------------------------------
 # 自动化任务：看新闻
 # ------------------------------
 def task_watch_news():
-    print("开始执行看新闻任务")
+    print(">>> 开始看新闻 <<<")
     print("点击 90 1550 看新闻按钮")
     adb.tap(90, 1550)
     print("点击 380 175 看热榜")
@@ -144,8 +141,7 @@ def task_watch_news():
         adb.tap(820, 1500)
         
         adb.back()
-
-
+    print("======看新闻任务结束……======")
 
 
 # ------------------------------
@@ -155,8 +151,8 @@ def run_tasks():
     print(">>> 开始执行每日积分任务 <<<")
 
     # 看新闻
-    task_watch_news()
-    time.sleep(10)
+    #task_watch_news()
+    #time.sleep(10)
 
     # 看视频
     task_watch_video()
@@ -168,6 +164,7 @@ def run_tasks():
     
     # 听新闻
     task_listen_news()
+    time.sleep(10)
 
     print(">>> 积分任务执行结束 <<<")
 
