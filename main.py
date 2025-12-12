@@ -10,7 +10,6 @@ if __name__ == "__main__":
     # 循环账号ACCOUNTS的长度
     for _ in range(len(accounts.ACCOUNTS)):
         task.run_tasks()
-        time.sleep(5)
         account_switcher.switch_to_next_account()
 
     # 立即执行一次
