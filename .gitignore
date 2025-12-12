@@ -5,4 +5,4 @@ __pycache__/
 
 
 # 忽略config文件夹
-config/
+config/**
