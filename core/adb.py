@@ -14,12 +14,14 @@ def cmd(cmd):
 def tap(x, y):
     cmd(f"shell input tap {x} {y}")
     # 点击后延迟1秒
-    time.sleep(random.uniform(2, 3))
+    print(f">>> [adb shell]: adb -s {DEVICE} shell input tap {x} {y}")
+    time.sleep(random.uniform(3, 4))
 
 # 滑动
 def swipe(x1, y1, x2, y2, duration=300):
     cmd(f"shell input swipe {x1} {y1} {x2} {y2} {duration}")
     # 点击后延迟1秒
+    print(f">>> [adb shell]: adb -s {DEVICE} shell input swipe {x1} {y1} {x2} {y2} {duration}")
     time.sleep(random.uniform(1, 2))
 
 # 截图
@@ -74,6 +76,7 @@ def back():
     返回
     """
     cmd(f'shell input keyevent KEYCODE_BACK')
+    print(f">>> [adb shell]: adb -s {DEVICE} shell input keyevent KEYCODE_BACK")
     time.sleep(random.uniform(1, 2))
 
 # 获取剪切板
@@ -93,5 +96,6 @@ def open_url(url):
     encoded = urllib.parse.quote(url, safe=":/?&=")
     adb_cmd = f'shell am start -a android.intent.action.VIEW -d \\"{encoded}\\""'
     cmd(adb_cmd)
+    print(f">>> [adb shell]: adb -s {DEVICE} {adb_cmd}")
     time.sleep(5)
     
