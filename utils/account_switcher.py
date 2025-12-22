@@ -8,20 +8,17 @@ from tasks.task import safe_run
 def logout():
     """退出当前账号"""
     print("==[info]==📢正在退出账号…")
-    template_paths = [settings.MINE_BTN_PATH, settings.MINE_BTN_02_PATH]
-    x, y, score, path = template_match.find_best_template(adb.screencap(), template_paths)
+    mine_btn_paths = [settings.MINE_BTN_PATH, settings.MINE_BTN_02_PATH, settings.MINE_BTN_03_PATH, settings.MINE_BTN_04_PATH]
+    x, y, score, path = template_match.find_best_template(adb.screencap(), mine_btn_paths)
     if x is not None:
         print(f"==[info]==📢匹配度最高的[我的]按钮：{path}，score={score:.2f}")
-        target_x, target_y = x, y
     else:
         print("==[error]==❌ 未找到我的按钮，请检查是否在首页")
         return False
-    if not x or not y:
-        print("==[error]==❌ 未找到我的按钮，请检查是否在首页")
-        return False
+    
     
     # 打开 “我的”
-    mine_success = adb.wait_and_tap("打开我的", 800, 1525, target_x, target_y)
+    mine_success = adb.wait_and_tap("打开我的", 800, 1525, x, y)
     #adb.tap(800, 1525)
     if not mine_success:
         print("==[ERROR]==❌ 打开[我的]失败")
@@ -33,7 +30,13 @@ def logout():
     # 点击 “退出登录”
     print("==[info]==📢点击退出登录按钮, 450 1500")
     #adb.tap(450, 1500)
-    logout_success = adb.wait_and_tap("退出登录", 450, 1500,x, y)
+    logout_btn_paths = [settings.LOGOUT_BTN_PATH]
+    x1, y1, score1, path1 = template_match.find_best_template(adb.screencap(), logout_btn_paths)
+    if x1 is not None:
+        print(f"==[info]==📢匹配度最高的[退出登录]按钮：{path1}，score={score1:.2f}")
+    else:
+        print("==[error]==❌ 未找到[退出登录]按钮，请检查是否在设置页面")
+    logout_success = adb.wait_and_tap("退出登录", 450, 1500,x1, y1)
     if not logout_success:
         print("==[ERROR]==❌ 退出登录失败")
         return False
@@ -43,12 +46,13 @@ def logout():
     adb.tap(605, 900)
 
     print("==[success]==✅退出成功！")
+    return True
 
 
 def login(username, password):
     """登录账号"""
     print(f"==[info]==📢准备登录账号：{username}")
-    template_paths = [settings.MINE_BTN_PATH, settings.MINE_BTN_02_PATH]
+    template_paths = [settings.MINE_BTN_PATH, settings.MINE_BTN_02_PATH, settings.MINE_BTN_03_PATH, settings.MINE_BTN_04_PATH]
     x, y, score, path = template_match.find_best_template(adb.screencap(), template_paths)
     if x is not None:
         print(f"==[info]==📢匹配度最高的[我的]按钮：{path}，score={score:.2f}")
@@ -97,6 +101,7 @@ def login(username, password):
     adb.tap(605, 900)
 
     print(f"==[success]==✅ 账号 {username} 登录成功！")
+    return True
 
 def switch_to_next_account():
     """从账号列表自动切换到下一个账号"""

@@ -104,7 +104,7 @@ def open_url(url):
     time.sleep(5)
 
 # 等待并校验
-def wait_and_tap(desc, x, y, x0, y0, timeout=15, threshold=20):
+def wait_and_tap(desc, x, y, x0, y0, timeout=15, threshold=30):
     """
     等待并点击
     :param desc: 描述
@@ -117,10 +117,11 @@ def wait_and_tap(desc, x, y, x0, y0, timeout=15, threshold=20):
     """
     start = time.time()
     while time.time() - start < timeout:
-        print(f"==[info]== 📢点击 {x} {y} {desc}")
+        print(f"==[info]==📢准备点击 {x} {y} {desc}")
         tap(x, y)
         # 计算两点之间的欧几里得距离,相差不大（阈值默认20）则认为比对成功
         distance = math.hypot(x - x0, y - y0)
+        print(f"==[info]==📢检验欧几里得距离: {distance}")
         if distance <= threshold:
             print(f"==[success]== ✅{desc} 成功")
             return True

@@ -1,6 +1,6 @@
 from openai import OpenAI
 import random
-from config.settings import DEEPSEEK_API_KEY, CHATAPI_US_API_KEY
+from config.settings import DEEPSEEK_API_KEY, GPTAPI_US_API_KEY
 
 
 styles = ["自然", "严谨", "幽默", "深刻", "生活"]
@@ -51,7 +51,7 @@ def gen_comment_gptapi(text):
     使用 gptapi.us 中转的 DeepSeek 模型
     """
     client = OpenAI(
-        api_key=CHATAPI_US_API_KEY,
+        api_key=GPTAPI_US_API_KEY,
         base_url="https://api.gptapi.us/v1/chat/completions"
     )
 

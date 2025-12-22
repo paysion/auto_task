@@ -180,16 +180,15 @@ def task_watch_video():
 # ------------------------------
 def task_watch_news():
     print(">>> 开始看新闻，检查是否在新闻页面 <<<")
-    template_paths=[settings.NEWS_BTN_02_PATH, settings.NEWS_BTN_PATH],
-    x, y, score, path = template_match.find_best_template(adb.screencap(), template_paths)
+    news_btn_paths = [settings.NEWS_BTN_02_PATH, settings.NEWS_BTN_PATH]
+    x, y, score, path = template_match.find_best_template(adb.screencap(), news_btn_paths)
     if x is not None:
         print(f"==[info]==📢匹配度最高的新闻按钮：{path}，score={score:.2f}")
-        target_x, target_y = x, y
     else:
         print("==[error]==❌ 未找到新闻按钮，请检查是否在新闻页面")
         return False
     
-    success = adb.wait_and_tap("看新闻", 90, 1550,target_x, target_y)
+    success = adb.wait_and_tap("看新闻", 90, 1550,x, y)
     if not success:
         print("==[error]==❌ 不在新闻页面，请检查是否在看新闻页面")
         return False
@@ -210,6 +209,9 @@ def task_watch_news():
         image_bytes = image_utils.encode_png(image)
         res_ocr = ocr.ocr_image(image_bytes)
         res_comment = comment.gen_comment(res_ocr)
+        if res_comment == "unknown":
+            print("==[error]==❌ 调用deepseek评论生成失败")
+            return False
         time.sleep(5)
         
         # 滑动观看新闻
@@ -222,7 +224,9 @@ def task_watch_news():
         adb.tap(820, 1490)
         
         adb.back()
+    
     print("======✅看新闻任务结束……======")
+    return True
 
 
 def safe_run(task_fn, name, retries=3):
