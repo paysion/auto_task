@@ -179,3 +179,49 @@ if __name__ == "__main__":
             print(f"{method_name}: {max_val:.4f}")
     else:
         print(f"找到模板: {result}")
+
+
+def find_best_template(screenshot, template_paths, min_score=0.0):
+    """
+    在多个模板中选择匹配度最高的一个
+
+    :param screenshot: 当前截图（adb.screencap() 的返回值）
+    :param template_paths: 模板图片路径列表
+    :param matcher: 模板匹配函数（如 template_match.find_template）
+    :param min_score: 最低可接受匹配度
+    :return: (best_x, best_y, best_score, best_template_path) 或 (None, None, None, None)
+    """
+    best_result = (None, None, None, None)
+    best_score = min_score
+
+    for path in template_paths:
+        x, y, score = find_template(screenshot, path)
+
+        # 未匹配到直接跳过
+        if x is None or y is None or score is None:
+            continue
+
+        # 选择匹配度更高的
+        if score > best_score:
+            best_score = score
+            best_result = (x, y, score, path)
+
+    return best_result
+
+def find_button(desc, screenshot, template_paths, min_score=0.6):
+    """
+    查找匹配度最高的按钮，找不到直接失败
+
+    :return: (x, y) 或 None
+    """
+    x, y, score, path = find_best_template(
+        screenshot, template_paths, min_score=min_score
+    )
+
+    if x is None:
+        print(f"==[error]==❌ 未找到【{desc}】按钮")
+        return None
+
+    print(f"==[info]==📢匹配度最高的【{desc}】按钮：{path}，score={score:.2f}")
+    return x, y
+

@@ -6,6 +6,8 @@ import time
 import pyperclip
 import urllib.parse
 from config.settings import DEVICE
+import math
+
 
 def cmd(cmd):
     return subprocess.run(f"adb -s {DEVICE} {cmd}", shell=True)
@@ -93,9 +95,55 @@ def get_clipboard():
 # 打开分享链接    
 def open_url(url):
     """使用 ADB 打开链接"""
+    # 检查url是否是https://dj.jxnews.com.cn/开头的
+    
     encoded = urllib.parse.quote(url, safe=":/?&=")
     adb_cmd = f'shell am start -a android.intent.action.VIEW -d \\"{encoded}\\""'
     cmd(adb_cmd)
     print(f">>> [adb shell]: adb -s {DEVICE} {adb_cmd}")
     time.sleep(5)
-    
+
+# 等待并校验
+def wait_and_tap(desc, x, y, x0, y0, timeout=15, threshold=20):
+    """
+    等待并点击
+    :param desc: 描述
+    :param x: x坐标
+    :param y: y坐标
+    :param x0: 匹配的x坐标
+    :param y0: 匹配的y坐标
+    :param timeout: 超时时间
+    :return: 是否成功
+    """
+    start = time.time()
+    while time.time() - start < timeout:
+        print(f"==[info]== 📢点击 {x} {y} {desc}")
+        tap(x, y)
+        # 计算两点之间的欧几里得距离,相差不大（阈值默认20）则认为比对成功
+        distance = math.hypot(x - x0, y - y0)
+        if distance <= threshold:
+            print(f"==[success]== ✅{desc} 成功")
+            return True
+    print(f"==[error]== ❌{desc} 失败（超时）")
+    return False
+
+# 打开应用 adb -s 127.0.0.1:5555 shell am start -n 
+# com.jxnews.jxttn/com.zjonline.xsb_main.MainAliasActivity.MainAliasActivityDefault
+def open_app(package_name):
+    """
+    打开应用
+    :param package_name: 包名
+    """
+    cmd(f'shell am start -n {package_name}')
+    print(f">>> [adb shell]: adb -s {DEVICE} shell am start -n {package_name}")
+    time.sleep(15)
+
+# 关闭应用 adb -s 127.0.0.1:5555 shell am force-stop com.jxnews.jxttn
+def close_app(package_name):
+    """
+    关闭应用
+    :param package_name: 包名
+    """
+    cmd(f'shell am force-stop {package_name}')
+    print(f">>> [adb shell]: adb -s {DEVICE} shell am force-stop {package_name}")
+    time.sleep(5)

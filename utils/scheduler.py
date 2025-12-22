@@ -18,9 +18,9 @@ def run_all_accounts():
 
 def run_daily():
     """
-    每日定时任务：每天 09:00 执行一次 run_all_accounts
+    每日定时任务：每天 06:00 执行一次 run_all_accounts
     """
-    schedule.every().day.at("09:00").do(run_all_accounts)
+    schedule.every().day.at("06:00").do(run_all_accounts)
 
     print(">>> 每日计划任务已启动，等待执行 <<<")
     while True:

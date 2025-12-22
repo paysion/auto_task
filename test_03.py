@@ -1,6 +1,10 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import core.ocr as ocr
+import core.adb as adb
+import utils.image_utils as image_utils
+import utils.text_utils as text_utils
 
 def chrome_open(url):
     opts = Options()
@@ -18,5 +22,20 @@ def task_share_news():
     chrome_open(url)
     print("分享任务完成！")
 
+# 识别听新闻的分钟数
+def ocr_minutes():
+    image = adb.screencap()
+    image_bytes = image_utils.encode_png(image)
+    res_ocr = ocr.ocr_image(image_bytes)
+    print("识别结果：", res_ocr)
+    res = text_utils.match_listened_minutes(res_ocr)
+    print("已听", res, "分钟")
+    # 将res转为数字，如果res > 60,则打印听新闻完成，否则打印任务未完成
+    if res > 60:
+        print("听新闻任务完成！")
+    else:
+        print("听新闻任务未完成！")
+    
+
 if __name__ == "__main__":
-    task_share_news()
+    ocr_minutes()

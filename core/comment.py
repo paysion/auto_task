@@ -1,5 +1,4 @@
 from openai import OpenAI
-import os
 import random
 from config.settings import DEEPSEEK_API_KEY
 
@@ -10,6 +9,9 @@ def gen_comment(text):
     """
     根据新闻内容 / 视频标题生成评论
     """
+    # 基本验证
+    if not text or not isinstance(text, str) or text.strip() == "":
+        return "unknown"
     client = OpenAI(
         api_key=DEEPSEEK_API_KEY,
         base_url="https://api.deepseek.com")
@@ -28,11 +30,11 @@ def gen_comment(text):
     response = client.chat.completions.create(
         model="deepseek-chat",
         messages=[
-            {"role": "system", "content": "你是一个人民日报的新闻读者"},
             {"role": "user", "content": prompt},
         ],
         stream=False
     )
-
+    if response.choices[0] is None:
+        return "unknown"
     print(response.choices[0].message.content)
     return response.choices[0].message.content
