@@ -3,7 +3,7 @@ import random
 from config.settings import DEEPSEEK_API_KEY, CHATAPI_US_API_KEY
 
 
-styles = ["自然", "严谨", "幽默", "深刻"]
+styles = ["自然", "严谨", "幽默", "深刻", "生活"]
 
 def _build_prompt(text):
     """
@@ -37,7 +37,6 @@ def gen_comment(text):
     response = client.chat.completions.create(
         model="deepseek-chat",
         messages=[
-            {"role": "system", "content": "你是一位理性、正面的新闻读者"},
             {"role": "user", "content": prompt},
         ],
         stream=False
