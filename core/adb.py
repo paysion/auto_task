@@ -124,6 +124,7 @@ def wait_and_tap(desc, x, y, x0, y0, timeout=15, threshold=30):
         print(f"==[info]==📢检验欧几里得距离: {distance}")
         if distance <= threshold:
             print(f"==[success]== ✅{desc} 成功")
+            time.sleep(random.uniform(2, 3))
             return True
     print(f"==[error]== ❌{desc} 失败（超时）")
     return False

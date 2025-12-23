@@ -5,6 +5,7 @@ import core.ocr as ocr
 import core.adb as adb
 import utils.image_utils as image_utils
 import utils.text_utils as text_utils
+import cv2
 
 def chrome_open(url):
     opts = Options()
@@ -35,7 +36,18 @@ def ocr_minutes():
         print("听新闻任务完成！")
     else:
         print("听新闻任务未完成！")
-    
+
+# ocr识别话题    
+def ocr_topic():
+    image_path = "templates/screenshots/topic.png"
+    # 从路径中读取图片
+    image = cv2.imread(image_path)
+    if image is None:
+        raise FileNotFoundError(f"图片读取失败: {image_path}")
+    image_bytes = image_utils.encode_png(image)
+    res_ocr = ocr.ocr_image(image_bytes)
+    print("识别结果：", res_ocr)
 
 if __name__ == "__main__":
-    ocr_minutes()
+    #ocr_minutes()
+    ocr_topic()
