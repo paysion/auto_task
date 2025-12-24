@@ -104,29 +104,34 @@ def open_url(url):
     time.sleep(5)
 
 # 等待并校验
-def wait_and_tap(desc, x, y, x0, y0, timeout=15, threshold=30):
+def wait_and_tap(desc, x, y, x0, y0, threshold=30, retries=3):
     """
-    等待并点击
+    尝试多次并点击
     :param desc: 描述
-    :param x: x坐标
-    :param y: y坐标
-    :param x0: 匹配的x坐标
-    :param y0: 匹配的y坐标
-    :param timeout: 超时时间
+    :param x: 目标 x 坐标
+    :param y: 目标 y 坐标
+    :param x0: 实际匹配到的 x 坐标
+    :param y0: 实际匹配到的 y 坐标
+    :param threshold: 欧几里得距离阈值
+    :param retries: 尝试次数（默认 3 次）
     :return: 是否成功
     """
-    start = time.time()
-    while time.time() - start < timeout:
-        print(f"==[info]==📢准备点击 {x} {y} {desc}")
-        tap(x, y)
-        # 计算两点之间的欧几里得距离,相差不大（阈值默认20）则认为比对成功
+    for i in range(1, retries + 1):
+        print(f"==[info]==📢第 {i} 次尝试点击 {x} {y} {desc}, 校验 {x0} {y0}")
+
+        # 计算欧几里得距离
         distance = math.hypot(x - x0, y - y0)
-        print(f"==[info]==📢检验欧几里得距离: {distance}")
+        print(f"==[info]==📢欧几里得距离: {distance}")
+
+        # 距离在阈值内，认为匹配成功
         if distance <= threshold:
             print(f"==[success]== ✅{desc} 成功")
-            time.sleep(random.uniform(2, 3))
+            tap(x, y)
             return True
-    print(f"==[error]== ❌{desc} 失败（超时）")
+        # 未成功则等待后继续下一次
+        time.sleep(3)
+    
+    print(f"==[error]== ❌{desc} 失败（已尝试 {retries} 次）")
     return False
 
 # 打开应用 adb -s 127.0.0.1:5555 shell am start -n 

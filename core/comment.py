@@ -19,6 +19,7 @@ def _build_prompt(text):
             1. 内容积极向上，不要出现政治内容
             2. 字数约 {word_count} 字
             3. 风格：{style}
+            4.要有生活气息,不要模板化
             """
 
 def gen_comment(text):

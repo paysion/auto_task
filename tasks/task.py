@@ -14,9 +14,14 @@ import config.settings as settings
 # ------------------------------
 def task_listen_news(task_seconds=3660):
     print(">>> 🎧 开始执行【听新闻】任务，检查是否在新闻页面 <<<")
-    x, y, _ = template_match.find_template(adb.screencap(), settings.NEWS_BTN_PATH)
+    news_btn_paths = [
+        settings.NEWS_BTN_PATH,
+        settings.NEWS_BTN_02_PATH,
+        settings.NEWS_BTN_03_PATH,
+    ]
+    x, y, _, _ = template_match.find_best_template(adb.screencap(), news_btn_paths)
     if x is None:
-        print("==[error]==❌ 未找到[听新闻]按钮，请检查是否在首页")
+        print("==[error]==❌ 未找到[新闻]按钮，请检查是否在首页")
         return False
     success = adb.wait_and_tap("看新闻", 90, 1550,x, y)
     if not success:
@@ -28,7 +33,7 @@ def task_listen_news(task_seconds=3660):
     print("==[info]==📢点击听新闻按钮 70 1440")
     adb.tap(70, 1440)
     
-    x1, y1, _ = template_match.find_template(adb.screencap(), settings.LISTEN_PLAY_BTN_PATH)
+    x1, y1, _ = template_match.find_template(adb.screencap(), settings.LISTEN_PLAY_BTN_PATH,0.9)
     if x1 is None:
         print("==[error]==❌ 未找到[播放]按钮，播放新闻失败！")
         return False
