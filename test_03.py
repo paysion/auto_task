@@ -9,7 +9,7 @@ import cv2
 
 def chrome_open(url):
     opts = Options()
-    opts.add_argument("--headless")  # 无头模式，不弹窗
+    #opts.add_argument("--headless")  # 无头模式，不弹窗
     opts.add_argument("--disable-gpu")
     opts.add_argument("--no-sandbox")
 
@@ -39,15 +39,23 @@ def ocr_minutes():
 
 # ocr识别话题    
 def ocr_topic():
-    image_path = "templates/screenshots/topic.png"
+    image = adb.screencap()
+    #image_path = "templates/screenshots/topic.png"
     # 从路径中读取图片
-    image = cv2.imread(image_path)
-    if image is None:
-        raise FileNotFoundError(f"图片读取失败: {image_path}")
+    #image = cv2.imread(image_path)
+    # if image is None:
+    #     raise FileNotFoundError(f"图片读取失败: {image_path}")
     image_bytes = image_utils.encode_png(image)
     res_ocr = ocr.ocr_image(image_bytes)
-    print("识别结果：", res_ocr)
+    print("\n识别结果：", res_ocr)
+    topics_clean = text_utils.clean_topic(res_ocr)
+    print("\n第一遍清洗：", topics_clean)
+    topics = text_utils.extract_topics(topics_clean)
+    print("\n话题：", topics)
+
+
 
 if __name__ == "__main__":
+    task_share_news()
     #ocr_minutes()
-    ocr_topic()
+    #ocr_topic()

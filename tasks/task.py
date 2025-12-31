@@ -13,80 +13,85 @@ import config.settings as settings
 # 听新闻
 # ------------------------------
 def task_listen_news(task_seconds=3660):
+    """
+    听新闻任务主流程
+    """
     print(">>> 🎧 开始执行【听新闻】任务，检查是否在新闻页面 <<<")
+
+    # 1️⃣ 查找新闻按钮
     news_btn_paths = [
         settings.NEWS_BTN_PATH,
         settings.NEWS_BTN_02_PATH,
         settings.NEWS_BTN_03_PATH,
     ]
+
     x, y, _, _ = template_match.find_best_template(adb.screencap(), news_btn_paths)
+
     if x is None:
         print("==[error]==❌ 未找到[新闻]按钮，请检查是否在首页")
         return False
-    success = adb.wait_and_tap("看新闻", 90, 1550,x, y)
-    if not success:
+
+    # 2️⃣ 进入新闻页面
+    if not adb.wait_and_tap("听新闻", 90, 1550, x, y):
         print("==[error]==❌ 不在新闻页面，请检查是否在看新闻页面")
         return False
-    #print("切换新闻页面")
-    #adb.tap(90,1550)
-    
-    print("==[info]==📢点击听新闻按钮 70 1440")
+
+    # 3️⃣ 点击「听新闻」
+    print("==[info]==📢 点击听新闻按钮 (70, 1440)")
     adb.tap(70, 1440)
-    
-    x1, y1, _ = template_match.find_template(adb.screencap(), settings.LISTEN_PLAY_BTN_PATH,0.9)
-    if x1 is None:
-        print("==[error]==❌ 未找到[播放]按钮，播放新闻失败！")
-        return False
-    listen_success = adb.wait_and_tap("播放新闻", 450, 700, x1, y1)
-    if not listen_success:
-        print("==[error]==❌ 播放新闻失败！")
-        return False 
-    
-    # print("📢点击播放按钮 450 700")
-    # adb.tap(450,700)
-    
-    # 任务听完一个小时
-    time.sleep(task_seconds)
-    # 检查是否完成任务
+
+    # 4️⃣ 点击播放
+    print("==[info]==📢 点击播放按钮 (450, 700)")
+    adb.tap(450, 700)
+
+    # 5️⃣ 首次检查任务状态
     status, remain = ocr.ocr_minutes()
-    if status == "unknown":
-        print("==[error]==❌ 未识别到听新闻分钟数！")
-        #adb.back()
-        return False
-    elif status == "done":
-        print("======✅听新闻任务结束，返回主界面=======")
+
+    if status == "done":
+        print("======✅ 听新闻任务已完成，返回主界面 =======")
         adb.back()
         return True
-    elif status == "ing":
-        print("======听新闻任务正在进行中=======")
-        # time.sleep(remain*60)
-        # 预留 5 秒缓冲，避免刚好卡在 60 分钟边界
+
+    if status == "unknown":
+        print("==[error]==❌ 未识别到听新闻分钟数！")
+        return False
+
+    if status == "ing":
+        print("==[info]==📢 听新闻任务进行中")
+        # 以 OCR 剩余时间为准
+        task_seconds = max(remain * 60 + 5, 10)
+
+    # 6️⃣ 等待任务播放完成
+    print(f"==[info]==⏳ 等待 {task_seconds} 秒")
+    time.sleep(task_seconds)
+
+    # 7️⃣ 再次检查状态
+    return _confirm_listen_done()
+
+def _confirm_listen_done(retry_times=3):
+    """
+    多次确认听新闻是否完成
+    """
+    for i in range(retry_times):
+        print(f"==[info]==📢 第 {i + 1} 次确认听新闻状态")
+        status, remain = ocr.ocr_minutes()
+
+        if status == "done":
+            print("======✅ 听新闻任务确认完成，返回主界面 =======")
+            adb.back()
+            return True
+
+        if status == "unknown":
+            print("==[warn]==⚠️ OCR 识别失败，5 秒后重试")
+            time.sleep(5)
+            continue
+
+        # ing 状态
         sleep_seconds = max(remain * 60 + 5, 10)
-        print(f"==[info]==⏳等待 {sleep_seconds} 秒后重新识别")
+        print(f"==[info]==⏳ 任务未完成，继续等待 {sleep_seconds} 秒")
         time.sleep(sleep_seconds)
 
-        # 再次校验是否完成
-        for i in range(3):  # 最多重试 3 次
-            print(f"==[info]==📢 第 {i + 1} 次重新识别听新闻状态")
-            status2, _ = ocr.ocr_minutes()
-
-            if status2 == "done":
-                print("======✅听新闻任务确认完成，返回主界面=======")
-                adb.back()
-                return True
-
-            if status2 == "unknown":
-                print("==[warn]==⚠️ OCR 识别失败，等待 5 秒重试")
-                time.sleep(5)
-                continue
-
-            print("==[info]==📢 听新闻仍未完成，继续等待 10 秒")
-            time.sleep(10)
-
-        print("==[error]==❌ 多次确认后仍未完成听新闻任务")
-        return False
-    
-    print("==[error]==❌ 【听新闻】任务发生未知状态")
+    print("==[error]==❌ 多次确认后仍未完成听新闻任务")
     return False
 
 # ------------------------------
@@ -95,6 +100,9 @@ def task_listen_news(task_seconds=3660):
 def task_watch_living_video():
     print(">>> 开始执行看直播任务，检查是否在视频页面 <<<")
     x, y, _ = template_match.find_template(adb.screencap(), settings.VIDEO_BTN_PATH)
+    if x is None or y is None:
+        print("==[error]==❌ 未找到视频按钮，请检查是否在首页")
+        return False
     success = adb.wait_and_tap("==[info]==📢看视频", 450, 1550,x, y)
     if not success:
         print("==[error]==❌ 不在视频页面，请检查是否在看视频页面")
@@ -159,6 +167,9 @@ def find_and_tap_live_button(max_attempts=3):
 def task_watch_video():
     print(">>> 开始看视频，检查是否在视频页面 <<<")
     x, y, _ = template_match.find_template(adb.screencap(), settings.VIDEO_BTN_PATH)
+    if x is None or y is None:
+        print("==[error]==❌ 未找到视频按钮，请检查是否在首页")
+        return False
     success = adb.wait_and_tap("看视频", 450, 1550,x, y)
     #print("点击 450 1550 看视频按钮")
     #adb.tap(450, 1550)

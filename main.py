@@ -14,7 +14,7 @@ if __name__ == "__main__":
     #     account_switcher.switch_to_next_account()
 
     # 启动时先执行一次所有账号
-    scheduler.run_all_accounts()
+    #scheduler.run_all_accounts()
 
-    # 开启每日调度（每天 06:00 执行）
+    # 开启每日调度（每天 02:00 执行）
     scheduler.run_daily()

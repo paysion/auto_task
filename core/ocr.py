@@ -48,12 +48,12 @@ def ocr_minutes():
     res_ocr = ocr_image(image_bytes)
     print("识别结果：", res_ocr)
     res = text_utils.match_listened_minutes(res_ocr)
-    if res == 0:
+    if res == -1:
         print("未识别到听新闻分钟数！")
         return "unknown", None
     print("已听", res, "分钟")
-    # 将res转为数字，如果res > 60,则打印听新闻完成，否则打印任务未完成
-    if res > 60:
+    # 将res转为数字，如果res >= 60,则打印听新闻完成，否则打印任务未完成
+    if res >= 60:
         print("==[success]== ✅听新闻任务完成！")
         return "done", None
     else:
