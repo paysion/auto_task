@@ -1,8 +1,9 @@
 import core.adb as adb
 import core.template_match as template_match
+import core.ocr as ocr
 from config.accounts import ACCOUNTS, CURRENT_INDEX
 import config.settings as settings
-from tasks.task import safe_run
+# from tasks.task import safe_run
 
 
 def logout():
@@ -51,6 +52,13 @@ def logout():
 
 def login(username, password):
     """登录账号"""
+    # todo 检查是否是提示登陆页面
+    print("==[info]==📢正在检查是否有提示登录页面")
+    # 用百度ocr识别文字“登录后才可获得任务积分奖励”
+    ocr_result = ocr.ocr_unlogin_popup()
+    if ocr_result:
+        # 用返回键关闭弹窗
+        adb.back()
     print(f"==[info]==📢准备登录账号：{username}")
     template_paths = [settings.MINE_BTN_PATH, settings.MINE_BTN_02_PATH, settings.MINE_BTN_03_PATH, settings.MINE_BTN_04_PATH]
     x, y, score, path = template_match.find_best_template(adb.screencap(), template_paths)
@@ -126,3 +134,20 @@ def switch_to_next_account():
 
     print(f"==[info]==📢 当前账号已切换为：{account['username']}")
 
+def safe_run(task_fn, name, retries=3):
+    for i in range(retries):
+        try:
+            print(f"==[info]==📢执行 {name}（第 {i+1} 次）")
+            success = task_fn()
+            if success:
+                print(f"✅ {name} 执行成功")
+                return True
+            print(f"==[error]==❌ {name} 执行失败，重启 App 后重试")
+            adb.close_app(settings.DJ_NEWS_PACKAGE)
+            adb.open_app(f"{settings.DJ_NEWS_PACKAGE}/{settings.DJ_NEWS_ACTIVITY}")
+        except Exception as e:
+            print(f"⚠️执行{name} 异常：{e}")
+            adb.close_app(settings.DJ_NEWS_PACKAGE)
+            adb.open_app(f"{settings.DJ_NEWS_PACKAGE}/{settings.DJ_NEWS_ACTIVITY}")
+    print(f"==[error]==❌ 执行{name} 最终失败，跳过")
+    return False
