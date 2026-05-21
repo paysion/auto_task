@@ -8,6 +8,8 @@ import config.settings as settings
 import random
 import utils.chrome_utils as chrome_utils
 import config.settings as settings
+import utils.account_switcher as account_switcher
+from config.accounts import ACCOUNTS, CURRENT_INDEX
 
 # ------------------------------
 # 听新闻
@@ -67,6 +69,88 @@ def task_listen_news(task_seconds=3660):
 
     # 7️⃣ 再次检查状态
     return _confirm_listen_done()
+
+def _confirm_listen_done(retry_times=3):
+    """
+    多次确认听新闻是否完成
+    """
+    for i in range(retry_times):
+        print(f"==[info]==📢 第 {i + 1} 次确认听新闻状态")
+        status, remain = ocr.ocr_minutes()
+
+        if status == "done":
+            print("======✅ 听新闻任务确认完成，返回主界面 =======")
+            adb.back()
+            return True
+
+        if status == "unknown":
+            print("==[warn]==⚠️ OCR 识别失败，5 秒后重试")
+            time.sleep(5)
+            continue
+
+        # ing 状态
+        sleep_seconds = max(remain * 60 + 5, 10)
+        print(f"==[info]==⏳ 任务未完成，继续等待 {sleep_seconds} 秒")
+        time.sleep(sleep_seconds)
+
+    print("==[error]==❌ 多次确认后仍未完成听新闻任务")
+    return False
+
+# def task_listen_news(task_seconds=3660):
+#     """
+#     听新闻任务主流程
+#     """
+#     print(">>> 🎧 开始执行【听新闻】任务，检查是否在新闻页面 <<<")
+
+#     # 1️⃣ 查找新闻按钮
+#     news_btn_paths = [
+#         settings.NEWS_BTN_PATH,
+#         settings.NEWS_BTN_02_PATH,
+#         settings.NEWS_BTN_03_PATH,
+#     ]
+
+#     x, y, _, _ = template_match.find_best_template(adb.screencap(), news_btn_paths)
+
+#     if x is None:
+#         print("==[error]==❌ 未找到[新闻]按钮，请检查是否在首页")
+#         return False
+
+#     # 2️⃣ 进入新闻页面
+#     if not adb.wait_and_tap("听新闻", 90, 1550, x, y):
+#         print("==[error]==❌ 不在新闻页面，请检查是否在看新闻页面")
+#         return False
+
+#     # 3️⃣ 点击「听新闻」
+#     print("==[info]==📢 点击听新闻按钮 (70, 1440)")
+#     adb.tap(70, 1440)
+
+#     # 4️⃣ 点击播放
+#     print("==[info]==📢 点击播放按钮 (450, 700)")
+#     adb.tap(450, 700)
+
+#     # 5️⃣ 首次检查任务状态
+#     status, remain = ocr.ocr_minutes()
+
+#     if status == "done":
+#         print("======✅ 听新闻任务已完成，返回主界面 =======")
+#         adb.back()
+#         return True
+
+#     if status == "unknown":
+#         print("==[error]==❌ 未识别到听新闻分钟数！")
+#         return False
+
+#     if status == "ing":
+#         print("==[info]==📢 听新闻任务进行中")
+#         # 以 OCR 剩余时间为准
+#         task_seconds = max(remain * 60 + 5, 10)
+
+#     # 6️⃣ 等待任务播放完成
+#     print(f"==[info]==⏳ 等待 {task_seconds} 秒")
+#     time.sleep(task_seconds)
+
+#     # 7️⃣ 再次检查状态
+#     return _confirm_listen_done()
 
 def _confirm_listen_done(retry_times=3):
     """
@@ -178,15 +262,25 @@ def task_watch_video():
         return False
     print("==[info]==📢点击 400 85 切换热点视频")
     adb.tap(400, 85)
+    # 播放视频
+    adb.tap(450, 450)
+    time.sleep(random.uniform(2, 3))
+    adb.tap(450, 450)
     
+    # 验证当前页面是否在视频播放界面
+    ocr_watching_video = ocr.ocr_watching_video()
+    if not ocr_watching_video:
+        print("==[error]==❌ 未识别到视频界面，可能未进入视频播放界面")
+        return False
+
     # todo 怎么确定每个视频的时间长短，目前是固定每过60秒滑一个
     for i in range(12):
             print(f"==[info]==📢正在滑动第 {i+1}/12 个视频")
             adb.swipe(450, 800, 450, 500, 300)
 
             print("==[info]==📢点击 840 1350 分享按钮")
-            adb.tap(840, 1350)
-
+            #adb.tap(840, 1350)
+            adb.tap(850, 1450)
             print("==[info]==📢点击 100 1380 复制链接")
             adb.tap(100, 1380)
 
@@ -281,8 +375,21 @@ def safe_run(task_fn, name, retries=3):
 # 主流程
 # ------------------------------
 def run_tasks():
-    print(">>> 开始执行每日积分任务 <<<")
+    global CURRENT_INDEX
+    account = ACCOUNTS[CURRENT_INDEX]
+    
+    print(">>> 开始执行每日积分任务，当前账号为 {account['username']} <<<")
 
+    # 检查是否是登陆
+    print("==[info]==📢正在检查是否登录")
+    # 用百度ocr识别文字“登录后才可获得任务积分奖励”
+    ocr_result = ocr.ocr_unlogin_popup()
+    if ocr_result:
+        # 点击登录
+        adb.tap(450,920)
+        # 登录当前账号
+        account_switcher.login(account['username'], account['password'])
+    
     # 看视频
     #task_watch_video()
     safe_run(task_watch_video, "看视频")
